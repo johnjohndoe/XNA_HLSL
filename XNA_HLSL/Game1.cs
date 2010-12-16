@@ -13,6 +13,27 @@ namespace XNAseries3
 {
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        struct MyOwnVertexFormat
+        {
+            private Vector3 position;
+            private Color color;
+
+            public MyOwnVertexFormat(Vector3 position, Color color)
+            {
+                this.position = position;
+                this.color = color;
+            }
+            public static VertexElement[] VertexElements =
+            {
+                // Describes position.
+                new VertexElement(0, 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
+                // Describes color. The stream offset equals the size of position.
+                new VertexElement(0, sizeof(float)*3, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Color, 0),
+            };
+            // Number of bytes that 1 vertex occupies in memory.
+            public static int SizeInBytes = sizeof(float) * (3 + 1);
+        }
+        
         GraphicsDeviceManager graphics;
         GraphicsDevice device;
 
@@ -51,16 +72,16 @@ namespace XNAseries3
 
         private void SetUpVertices()
         {
-            VertexPositionColor[] vertices = new VertexPositionColor[3];
+            MyOwnVertexFormat[] vertices = new MyOwnVertexFormat[3];
 
-            vertices[0] = new VertexPositionColor(new Vector3(-2, 2, 0), Color.Red);
-            vertices[1] = new VertexPositionColor(new Vector3(2, -2, -2), Color.Green);
-            vertices[2] = new VertexPositionColor(new Vector3(0, 0, 2), Color.Yellow);
+            vertices[0] = new MyOwnVertexFormat(new Vector3(-2, 2, 0), Color.Red);
+            vertices[1] = new MyOwnVertexFormat(new Vector3(2, -2, -2), Color.Green);
+            vertices[2] = new MyOwnVertexFormat(new Vector3(0, 0, 2), Color.Yellow);
 
             vertexBuffer = new VertexBuffer(device, vertices.Length * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
             vertexBuffer.SetData(vertices);
 
-            vertexDeclaration = new VertexDeclaration(device, VertexPositionColor.VertexElements);
+            vertexDeclaration = new VertexDeclaration(device, MyOwnVertexFormat.VertexElements);
         }
 
         private void SetUpCamera()
@@ -98,7 +119,7 @@ namespace XNAseries3
             {
                 pass.Begin();
                 device.VertexDeclaration = vertexDeclaration;
-                device.Vertices[0].SetSource(vertexBuffer, 0, VertexPositionColor.SizeInBytes);
+                device.Vertices[0].SetSource(vertexBuffer, 0, MyOwnVertexFormat.SizeInBytes);
                 device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
                 pass.End();
             }
