@@ -25,6 +25,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OurHLSLfile.fx">
+      <Name>OurHLSLfile</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.EffectImporter, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
