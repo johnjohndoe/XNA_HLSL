@@ -1,6 +1,6 @@
 using System;
 
-namespace XNA_HLSL
+namespace XNAseries3
 {
     static class Program
     {

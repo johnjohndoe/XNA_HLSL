@@ -1,25 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
 
-namespace XNA_HLSL
+namespace XNAseries3
 {
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        GraphicsDevice device;
+
+        Effect effect;
+        Matrix viewMatrix;
+        Matrix projectionMatrix;
+        VertexBuffer vertexBuffer;
+        VertexDeclaration vertexDeclaration;
+        Vector3 cameraPos;
 
         public Game1()
         {
@@ -27,67 +29,80 @@ namespace XNA_HLSL
             Content.RootDirectory = "Content";
         }
 
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            graphics.PreferredBackBufferWidth = 500;
+            graphics.PreferredBackBufferHeight = 500;
+            graphics.IsFullScreen = false;
+            graphics.ApplyChanges();
+            Window.Title = "Riemer's XNA Tutorials -- Series 3 -- HLSL";
 
             base.Initialize();
         }
 
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            device = GraphicsDevice;
 
-            // TODO: use this.Content to load your game content here
+            effect = Content.Load<Effect>("effects");
+            SetUpVertices();
+            SetUpCamera();
         }
 
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
-        /// </summary>
+        private void SetUpVertices()
+        {
+            VertexPositionColor[] vertices = new VertexPositionColor[3];
+
+            vertices[0] = new VertexPositionColor(new Vector3(-2, 2, 0), Color.Red);
+            vertices[1] = new VertexPositionColor(new Vector3(2, -2, -2), Color.Green);
+            vertices[2] = new VertexPositionColor(new Vector3(0, 0, 2), Color.Yellow);
+
+            vertexBuffer = new VertexBuffer(device, vertices.Length * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
+            vertexBuffer.SetData(vertices);
+
+            vertexDeclaration = new VertexDeclaration(device, VertexPositionColor.VertexElements);
+        }
+
+        private void SetUpCamera()
+        {
+            cameraPos = new Vector3(0, 5, 6);
+            viewMatrix = Matrix.CreateLookAt(cameraPos, new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 200.0f);
+        }
+
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
         }
 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            KeyboardState keyboardState = Keyboard.GetState();
+            KeyboardState keyState = Keyboard.GetState();
 
-            // Allows the game to exit
-            if (keyboardState.IsKeyDown(Keys.Escape))
+            // Allows to exit the game.
+            if (keyState.IsKeyDown(Keys.Escape))
                 this.Exit();
-
-            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DarkSlateBlue, 1.0f, 0);
 
-            // TODO: Add your drawing code here
+            effect.CurrentTechnique = effect.Techniques["Colored"];
+            effect.Parameters["xView"].SetValue(viewMatrix);
+            effect.Parameters["xProjection"].SetValue(projectionMatrix);
+            effect.Parameters["xWorld"].SetValue(Matrix.Identity);
+            effect.Begin();
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                device.VertexDeclaration = vertexDeclaration;
+                device.Vertices[0].SetSource(vertexBuffer, 0, VertexPositionColor.SizeInBytes);
+                device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
+                pass.End();
+            }
+            effect.End();
 
             base.Draw(gameTime);
         }
