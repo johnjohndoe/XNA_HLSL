@@ -65,7 +65,7 @@ namespace XNAseries3
         {
             device = GraphicsDevice;
 
-            effect = Content.Load<Effect>("effects");
+            effect = Content.Load<Effect>("OurHLSLfile");
             SetUpVertices();
             SetUpCamera();
         }
@@ -110,10 +110,8 @@ namespace XNAseries3
         {
             device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DarkSlateBlue, 1.0f, 0);
 
-            effect.CurrentTechnique = effect.Techniques["Colored"];
-            effect.Parameters["xView"].SetValue(viewMatrix);
-            effect.Parameters["xProjection"].SetValue(projectionMatrix);
-            effect.Parameters["xWorld"].SetValue(Matrix.Identity);
+            effect.CurrentTechnique = effect.Techniques["Simplest"];
+            effect.Parameters["xViewProjection"].SetValue(viewMatrix * projectionMatrix);
             effect.Begin();
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
