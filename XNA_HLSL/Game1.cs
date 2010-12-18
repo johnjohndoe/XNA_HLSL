@@ -75,11 +75,20 @@ namespace XNAseries3
 
         private void SetUpVertices()
         {
-            MyOwnVertexFormat[] vertices = new MyOwnVertexFormat[3];
+            MyOwnVertexFormat[] vertices = new MyOwnVertexFormat[12];
 
-            vertices[0] = new MyOwnVertexFormat(new Vector3(-2, 2, 0), new Vector2(0.0f, 0.0f));
-            vertices[1] = new MyOwnVertexFormat(new Vector3(2, -2, -2), new Vector2(0.125f, 1.0f));
-            vertices[2] = new MyOwnVertexFormat(new Vector3(0, 0, 2), new Vector2(0.25f, 0.0f));
+            vertices[0] = new MyOwnVertexFormat(new Vector3(-20, 0, 10), new Vector2(-0.25f, 25.0f));
+            vertices[1] = new MyOwnVertexFormat(new Vector3(-20, 0, -100), new Vector2(-0.25f, 0.0f));
+            vertices[2] = new MyOwnVertexFormat(new Vector3(2, 0, 10), new Vector2(0.25f, 25.0f));
+            vertices[3] = new MyOwnVertexFormat(new Vector3(2, 0, -100), new Vector2(0.25f, 0.0f));
+            vertices[4] = new MyOwnVertexFormat(new Vector3(2, 1, 10), new Vector2(0.375f, 25.0f));
+            vertices[5] = new MyOwnVertexFormat(new Vector3(2, 1, -100), new Vector2(0.375f, 0.0f));
+            vertices[6] = new MyOwnVertexFormat(new Vector3(3, 1, 10), new Vector2(0.5f, 25.0f));
+            vertices[7] = new MyOwnVertexFormat(new Vector3(3, 1, -100), new Vector2(0.5f, 0.0f));
+            vertices[8] = new MyOwnVertexFormat(new Vector3(13, 1, 10), new Vector2(0.75f, 25.0f));
+            vertices[9] = new MyOwnVertexFormat(new Vector3(13, 1, -100), new Vector2(0.75f, 0.0f));
+            vertices[10] = new MyOwnVertexFormat(new Vector3(13, 21, 10), new Vector2(1.25f, 25.0f));
+            vertices[11] = new MyOwnVertexFormat(new Vector3(13, 21, -100), new Vector2(1.25f, 0.0f));
 
             vertexBuffer = new VertexBuffer(device, vertices.Length * MyOwnVertexFormat.SizeInBytes, BufferUsage.WriteOnly);
             vertexBuffer.SetData(vertices);
@@ -89,8 +98,8 @@ namespace XNAseries3
 
         private void SetUpCamera()
         {
-            cameraPos = new Vector3(0, 5, 6);
-            viewMatrix = Matrix.CreateLookAt(cameraPos, new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+            cameraPos = new Vector3(-25, 13, 18);
+            viewMatrix = Matrix.CreateLookAt(cameraPos, new Vector3(0, 2, -12), new Vector3(0, 1, 0));
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 200.0f);
         }
 
@@ -111,7 +120,7 @@ namespace XNAseries3
 
         protected override void Draw(GameTime gameTime)
         {
-            device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DarkSlateBlue, 1.0f, 0);
+            device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
             effect.CurrentTechnique = effect.Techniques["Simplest"];
             effect.Parameters["xViewProjection"].SetValue(viewMatrix * projectionMatrix);
@@ -122,7 +131,7 @@ namespace XNAseries3
                 pass.Begin();
                 device.VertexDeclaration = vertexDeclaration;
                 device.Vertices[0].SetSource(vertexBuffer, 0, MyOwnVertexFormat.SizeInBytes);
-                device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
+                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 10);
                 pass.End();
             }
             effect.End();
