@@ -45,6 +45,10 @@ namespace XNAseries3
         Vector3 cameraPos;
 
         Texture2D streetTexture;
+        Model lamppostModel;
+        Texture2D[] lamppostTextures;
+        Model carModel;
+        Texture2D[] carTextures;
 
         public Game1()
         {
@@ -69,8 +73,27 @@ namespace XNAseries3
 
             effect = Content.Load<Effect>("OurHLSLfile");
             streetTexture = Content.Load<Texture2D>("streettexture");
+            carModel = LoadModel("car", out carTextures);
+            lamppostModel = LoadModel("lamppost", out lamppostTextures);
             SetUpVertices();
             SetUpCamera();
+        }
+
+        private Model LoadModel(string assetName, out Texture2D[] textures)
+        {
+
+            Model newModel = Content.Load<Model>(assetName);
+            textures = new Texture2D[7];
+            int i = 0;
+            foreach (ModelMesh mesh in newModel.Meshes)
+                foreach (BasicEffect currentEffect in mesh.Effects)
+                    textures[i++] = currentEffect.Texture;
+
+            foreach (ModelMesh mesh in newModel.Meshes)
+                foreach (ModelMeshPart meshPart in mesh.MeshParts)
+                    meshPart.Effect = effect.Clone(device);
+
+            return newModel;
         }
 
         private void SetUpVertices()
@@ -123,7 +146,7 @@ namespace XNAseries3
             device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
             effect.CurrentTechnique = effect.Techniques["Simplest"];
-            effect.Parameters["xViewProjection"].SetValue(viewMatrix * projectionMatrix);
+            effect.Parameters["xWorldViewProjection"].SetValue(viewMatrix * projectionMatrix);
             effect.Parameters["xTexture"].SetValue(streetTexture);
             effect.Begin();
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
@@ -136,7 +159,39 @@ namespace XNAseries3
             }
             effect.End();
 
+            Matrix car1Matrix = Matrix.CreateScale(4f) * Matrix.CreateRotationY(MathHelper.Pi) * Matrix.CreateTranslation(-3, 0, -15);
+            DrawModel(carModel, carTextures, car1Matrix, "Simplest", false);
+
+            Matrix car2Matrix = Matrix.CreateScale(4f) * Matrix.CreateRotationY(MathHelper.Pi * 5.0f / 8.0f) * Matrix.CreateTranslation(-28, 0, -1.9f);
+            DrawModel(carModel, carTextures, car2Matrix, "Simplest", false);
+
+            Matrix lamp1Matrix = Matrix.CreateScale(0.05f) * Matrix.CreateTranslation(4.0f, 1, -35);
+            DrawModel(lamppostModel, lamppostTextures, lamp1Matrix, "Simplest", true);
+
+            Matrix lamp2Matrix = Matrix.CreateScale(0.05f) * Matrix.CreateTranslation(4.0f, 1, -5);
+            DrawModel(lamppostModel, lamppostTextures, lamp2Matrix, "Simplest", true);
+
             base.Draw(gameTime);
         }
+
+        private void DrawModel(Model model, Texture2D[] textures, Matrix wMatrix, string technique, bool solidBrown)
+        {
+            Matrix[] modelTransforms = new Matrix[model.Bones.Count];
+            model.CopyAbsoluteBoneTransformsTo(modelTransforms);
+            int i = 0;
+            foreach (ModelMesh mesh in model.Meshes)
+            {
+                foreach (Effect currentEffect in mesh.Effects)
+                {
+                    Matrix worldMatrix = modelTransforms[mesh.ParentBone.Index] * wMatrix;
+                    currentEffect.CurrentTechnique = currentEffect.Techniques[technique];
+                    currentEffect.Parameters["xWorldViewProjection"].SetValue(worldMatrix * viewMatrix * projectionMatrix);
+                    currentEffect.Parameters["xTexture"].SetValue(textures[i++]);
+                    currentEffect.Parameters["xSolidBrown"].SetValue(solidBrown);
+                }
+                mesh.Draw();
+            }
+        }
+
     }
 }

@@ -1,5 +1,6 @@
-float4x4 xViewProjection;
+float4x4 xWorldViewProjection;
 Texture xTexture;
+bool xSolidBrown;
 
 sampler TextureSampler = sampler_state
 { 
@@ -26,13 +27,15 @@ PixelToFrame OurFirstPixelShader(VertexToPixel PSIn)
 {
     PixelToFrame Output = (PixelToFrame)0;
     Output.Color = tex2D(TextureSampler, PSIn.TexCoords);
+    if (xSolidBrown == true)
+		Output.Color = float4(0.25f, 0.21f, 0.20f, 1);
     return Output;
 }
 
 VertexToPixel SimplestVertexShader(float4 inPos : POSITION, float2 inTexCoords : TEXCOORD0)
 {
     VertexToPixel Output = (VertexToPixel)0;
-    Output.Position = mul(inPos, xViewProjection);
+    Output.Position = mul(inPos, xWorldViewProjection);
     Output.TexCoords = inTexCoords;
     return Output;
 }
