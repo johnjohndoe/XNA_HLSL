@@ -54,6 +54,10 @@ namespace XNAseries3
         Model carModel;
         Texture2D[] carTextures;
 
+        Vector3 lightPos;
+        float lightPower;
+        float ambientPower;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -148,7 +152,16 @@ namespace XNAseries3
             if (keyState.IsKeyDown(Keys.Escape))
                 this.Exit();
 
+            UpdateLightData();
+
             base.Update(gameTime);
+        }
+
+        private void UpdateLightData()
+        {
+            lightPos = new Vector3(-10, 4, -2);
+            lightPower = 1.0f;
+            ambientPower = 0.2f;
         }
 
         protected override void Draw(GameTime gameTime)
@@ -157,6 +170,10 @@ namespace XNAseries3
 
             effect.CurrentTechnique = effect.Techniques["Simplest"];
             effect.Parameters["xWorldViewProjection"].SetValue(viewMatrix * projectionMatrix);
+            effect.Parameters["xWorld"].SetValue(Matrix.Identity);
+            effect.Parameters["xLightPos"].SetValue(lightPos);
+            effect.Parameters["xLightPower"].SetValue(lightPower);
+            effect.Parameters["xAmbient"].SetValue(ambientPower);
             effect.Parameters["xTexture"].SetValue(streetTexture);
             effect.Begin();
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
@@ -196,6 +213,10 @@ namespace XNAseries3
                     Matrix worldMatrix = modelTransforms[mesh.ParentBone.Index] * wMatrix;
                     currentEffect.CurrentTechnique = currentEffect.Techniques[technique];
                     currentEffect.Parameters["xWorldViewProjection"].SetValue(worldMatrix * viewMatrix * projectionMatrix);
+                    currentEffect.Parameters["xWorld"].SetValue(worldMatrix);
+                    currentEffect.Parameters["xLightPos"].SetValue(lightPos);
+                    currentEffect.Parameters["xLightPower"].SetValue(lightPower);
+                    currentEffect.Parameters["xAmbient"].SetValue(ambientPower);
                     currentEffect.Parameters["xTexture"].SetValue(textures[i++]);
                     currentEffect.Parameters["xSolidBrown"].SetValue(solidBrown);
                 }
